@@ -9,5 +9,7 @@ export interface Book {
     isBorrowed: boolean;
     rentedById?: number;
     rentedBy?: Member; 
+    genre?: string;
+    description?:string
   }
   
