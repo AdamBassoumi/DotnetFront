@@ -89,6 +89,8 @@ export class AppComponent implements OnInit {
       ...this.newBookDom,
       title: this.newBook.title,
       isBorrowed: false,
+      description:this.newBook.description,
+      genre:this.newBook.genre
     };
 
     var auth = this.newBook.author
