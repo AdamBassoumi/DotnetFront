@@ -1,82 +1,66 @@
 <div class="flex h-screen bg-gray-100">
-  <!-- Sidebar: Authors and Members -->
+  <!-- Sidebar: Authors -->
   <div class="w-1/4 bg-white shadow-md p-5">
-    <h1 class="text-3xl mb-6 text-[#800020]">ShelfMaster</h1>
+    <h1 class="text-3xl mb-6 text-[#800020]">ShelfMaster</h1> <!-- Larger heading for site name -->
     <ul class="space-y-2">
-      <!-- 'All Authors' option -->
-      <li 
-        class="bg-gray-200 p-2 rounded cursor-pointer" 
-        [ngClass]="{'bg-blue-200': selectedAuthorId === 0}"
-        (click)="selectedAuthorId = 0">
-        All Authors
+      <li class="bg-gray-200 p-2 rounded cursor-pointer" 
+          [ngClass]="{'bg-blue-200': selectedAuthorId === 0 && selectedMemberId === 0}"
+          (click)="onAuthorClick(0)">
+        Authors
       </li>
     
-      <!-- List of authors -->
-      <li 
-        *ngFor="let author of authors" 
-        class="bg-gray-200 p-2 rounded cursor-pointer" 
-        [ngClass]="{'bg-blue-200': selectedAuthorId === author.id}"
-        (click)="selectedAuthorId = author.id">
+      <li *ngFor="let author of Allauthors" 
+          class="bg-gray-200 p-2 rounded cursor-pointer"
+          [ngClass]="{'bg-blue-200': selectedAuthorId === author.id}"
+          (click)="onAuthorClick(author.id)">
         {{ author.name }}
       </li>
-
-      <!-- 'All Members' option -->
-      <li 
-        class="bg-gray-200 p-2 rounded cursor-pointer" 
-        [ngClass]="{'bg-blue-200': selectedMemberId === 0}"
-        (click)="selectedMemberId = 0">
-        All Members
+    
+      <li class="bg-gray-200 p-2 rounded cursor-pointer" 
+          [ngClass]="{'bg-blue-200': selectedMemberId === 0 && selectedAuthorId === 0}"
+          (click)="onMemberClick(0)">
+        Members
       </li>
-
-      <!-- List of members -->
-      <!-- <li 
-        *ngFor="let member of members" 
-        class="bg-gray-200 p-2 rounded cursor-pointer" 
-        [ngClass]="{'bg-blue-200': selectedMemberId === member.id}"
-        (click)="selectedMemberId = member.id">
+    
+      <li *ngFor="let member of members" 
+          class="bg-gray-200 p-2 rounded cursor-pointer"
+          [ngClass]="{'bg-blue-200': selectedMemberId === member.id}"
+          (click)="onMemberClick(member.id)">
         {{ member.fullName }}
-      </li> -->
+      </li>
     </ul>
-    
-    <!-- Button to Add a Member -->
-    
   </div>
 
   <!-- Main Content -->
   <div class="flex-1 p-6">
     <!-- Button to Add a Book -->
-    <button class="bg-blue-500 text-white py-2 px-4 rounded mb-4" (click)="openAddBookPopup()">
+    <button class="bg-blue-500 text-white py-2 px-4 mr-3 rounded mb-4" (click)="openAddBookPopup()">
       Add a Book
     </button>
+
     <button class="bg-green-500 text-white py-2 px-4 rounded mt-4" (click)="openAddMemberPopup()">
       Add a Member
     </button>
+
     <!-- Books List -->
     <div class="grid grid-cols-5 gap-4">
-      <div 
-        *ngFor="let book of books | filterByAuthor:selectedAuthorId:authors" 
-        class="book-item bg-white shadow-md rounded p-4 cursor-pointer"
-        (click)="openBookDetails(book)">
-        <img 
-          src="assets/images/ACOTAR_1-min.jpg"
-          alt="Book" 
-          class="w-full h-fit object-cover rounded mb-2" 
-        />
-        <h3 class="text-sm font-semibold">{{ book.title }}</h3>
-        <h3 
-          class="text-sm font-semibold"
-          [ngClass]="{
-            'text-green-500': !book.isBorrowed,
-            'text-red-500': book.isBorrowed
-          }">
-          {{ book.isBorrowed ? 'This book is already Out' : 'This book is available' }}
-        </h3>
-      </div>
+      <div *ngFor="let book of Allbooks | filterByAuthor:selectedAuthorId:selectedMemberId:Allauthors"
+      class="book-item bg-white shadow-md rounded p-4 cursor-pointer" 
+      (click)="openBookDetails(book)">
+      <img src="assets/images/ACOTAR_1-min.jpg" alt="Book" class="w-full h-fit object-cover rounded mb-2" />
+      <h3 class="text-sm font-semibold">{{ book.title }}</h3>
+    
+      <h3 class="text-sm font-semibold" [ngClass]="{
+        'text-green-500': !book.isBorrowed,
+        'text-red-500': book.isBorrowed
+      }">
+        {{ book.isBorrowed ? 'This book is already Out' : 'This book is available' }}
+      </h3>
+    </div>
     </div>
   </div>
 </div>
 
-<!-- Add Member Popup -->
 <div *ngIf="showAddMemberPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
   <div class="bg-white rounded-lg p-6 w-1/2">
     <h2 class="text-lg font-semibold mb-4">Add a New Member</h2>
@@ -87,15 +71,54 @@
           class="w-full border border-gray-300 rounded p-2" required />
       </div>
       <div>
-        <label for="email" class="block text-sm font-medium">Email</label>
-        
-          class="w-full border border-gray-300 rounded p-2" required />
       </div>
       <div class="flex justify-between">
         <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">
           Add Member
         </button>
         <button type="button" class="bg-gray-300 text-black py-2 px-4 rounded" (click)="closeAddMemberPopup()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Book Popup -->
+<div *ngIf="showAddBookPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg p-6 w-1/2">
+    <h2 class="text-lg font-semibold mb-4">Add a New Book</h2>
+    <form (ngSubmit)="addBook()" class="space-y-4">
+      <div>
+        <label for="name" class="block text-sm font-medium">Book Name</label>
+        <input type="text" id="name" [(ngModel)]="newBook.title" name="title"
+          class="w-full border border-gray-300 rounded p-2" required />
+      </div>
+      <div>
+        <label for="genre" class="block text-sm font-medium">Genre</label>
+        <input type="text" id="genre" [(ngModel)]="newBook.genre" name="genre"
+          class="w-full border border-gray-300 rounded p-2" required />
+      </div>
+      <div>
+        <label for="description" class="block text-sm font-medium">Description</label>
+        <textarea id="description" [(ngModel)]="newBook.description" name="description"
+          class="w-full border border-gray-300 rounded p-2" required>
+        </textarea>
+      </div>
+      <div>
+        <label for="author" class="block text-sm font-medium">Author</label>
+        <select id="author" [(ngModel)]="newBook.author" name="author"
+          class="w-full border border-gray-300 rounded p-2">
+          <option *ngFor="let author of Allauthors" [value]="author">
+            {{ author }}
+          </option>
+        </select>
+      </div>
+      <div class="flex justify-between">
+        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">
+          Add Book
+        </button>
+        <button type="button" class="bg-gray-300 text-black py-2 px-4 rounded" (click)="closeAddBookPopup()">
           Cancel
         </button>
       </div>
@@ -123,16 +146,12 @@
 
     <div class="flex justify-between mt-4">
       <!-- Button to open the nested Rent popup -->
-      <button 
-      class="py-2 px-4 rounded" 
-      [ngClass]="{
+      <button class="py-2 px-4 rounded" [ngClass]="{
         'bg-green-500 text-white': !selectedBook.isBorrowed,
         'bg-blue-500 text-white': selectedBook.isBorrowed
-      }"
-      (click)="selectedBook.isBorrowed ? returnBook() : openRentBookPopup()"
-    >
-      {{ selectedBook.isBorrowed ? 'Return Book' : 'Rent Book' }}
-    </button>
+      }" (click)="selectedBook.isBorrowed ? returnBook() : openRentBookPopup()">
+        {{ selectedBook.isBorrowed ? 'Return Book' : 'Rent Book' }}
+      </button>
       <button class="bg-gray-300 text-black py-2 px-4 rounded" (click)="closeBookDetailsPopup()">
         Close
       </button>

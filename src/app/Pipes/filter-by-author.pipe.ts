@@ -7,17 +7,28 @@ import { Author } from '../models/Author';
   name: 'filterByAuthor'
 })
 export class FilterByAuthorPipe implements PipeTransform {
-  transform(books: any[], selectedAuthorId: number, authors: Author[]): Book[] {
-    if (!books || selectedAuthorId === 0) {
-      return books; // Return all books if 'All Authors' is selected
+  transform(books: Book[], selectedAuthorId: number, selectedMemberId: number, authors: Author[]): Book[] {
+    if (!books) {
+      return [];
     }
 
-    // Find the author's name by ID
-    const selectedAuthor = authors.find(author => author.id === selectedAuthorId);
-    if (!selectedAuthor) {
-      return []; // Return an empty array if no author matches the selected ID
+    // Ensure selectedAuthorId and selectedMemberId are numbers, default to 0 if undefined
+    selectedAuthorId = selectedAuthorId || 0;
+    selectedMemberId = selectedMemberId || 0;
+
+    if (selectedAuthorId > 0) {
+      // Filter by author
+      const selectedAuthor = authors.find(author => author.id === selectedAuthorId);
+      if (!selectedAuthor) {
+        return []; // Return an empty array if no author matches the selected ID
+      }
+      return books.filter(book => book.authorId === selectedAuthor.id);
+    } else if (selectedMemberId > 0) {
+      // Filter by member
+      return books.filter(book => book.rentedById === selectedMemberId);
     }
 
-    return books.filter(book => book.authorId === selectedAuthor.id);
+    // Return all books if no filter is applied
+    return books;
   }
 }
