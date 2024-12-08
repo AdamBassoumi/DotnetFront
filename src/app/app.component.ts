@@ -38,6 +38,8 @@ export class AppComponent implements OnInit {
 
   newBook = { title: '', genre: '', description: '', author: '', isBorrowed: false, authorId: 2 ,rentedById:null};
   newBookDom?: any
+  newMember = { fullName: ''};
+  selectedMemberId = 0;
 
   selectedBook: any = null;
   selectedAuthorId = 0;
@@ -66,7 +68,11 @@ export class AppComponent implements OnInit {
       console.log(this.Allauthors)
     });
   }
-
+  addMember() {
+    this.memberService.addMember(this.newMember).subscribe(() => {
+      console.log('Member added successfully');
+      this.closeAddMemberPopup();
+    }); }
   loadBooks() {
     this.bookService.getAllBooks().subscribe((data) => {
       this.Allbooks = data;
@@ -81,6 +87,7 @@ export class AppComponent implements OnInit {
     });
   }
 
+ 
   addBook() {
 
     //this.books.push({ ...this.newBook });
@@ -161,7 +168,16 @@ export class AppComponent implements OnInit {
   showAddBookPopup = false;
   showBookDetailsPopup = false;
   showRentBookPopup = false;
+  showAddMemberPopup = false;
 
+
+  openAddMemberPopup() {
+    this.showAddMemberPopup = true;
+  }
+
+  closeAddMemberPopup() {
+    this.showAddMemberPopup = false;
+  }
   // Method to open the Add Book popup
   openAddBookPopup() {
     this.showAddBookPopup = true;
