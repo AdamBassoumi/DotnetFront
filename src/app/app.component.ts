@@ -15,7 +15,28 @@ import { forkJoin, switchMap } from 'rxjs';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  showErrorPopup(message: string): void {
+    const popup = document.getElementById('error-popup');
+    const messageSpan = document.getElementById('error-message');
 
+    if (popup && messageSpan) {
+      messageSpan.textContent = `Error: ${message}`;
+      popup.classList.remove('hidden'); // Show the popup
+
+      // Auto-hide the popup after 5 seconds
+      setTimeout(() => {
+        popup.classList.add('hidden');
+      }, 5000);
+    }
+  }
+
+  // Function to manually hide the popup (e.g., on button click)
+  hideErrorPopup(): void {
+    const popup = document.getElementById('error-popup');
+    if (popup) {
+      popup.classList.add('hidden'); // Hide the popup
+    }
+  }
   // authors: Author[] = [
   //   {id: 1,name: 'Author 1'},
   //   {id: 2,name: 'Author 2'},
@@ -44,6 +65,8 @@ export class AppComponent implements OnInit {
   selectedBook: any = null;
   selectedAuthorId = 0;
   selectedMemberId =0;
+  showAuthorsDropdown = false;
+  showMembersDropdown = false;
 
   // Rent book form details
   rentDetails = {
@@ -78,6 +101,23 @@ export class AppComponent implements OnInit {
       console.log(this.Allbooks)
     });
   }
+  toggleAuthorsDropdown() {
+    this.showAuthorsDropdown = !this.showAuthorsDropdown;
+    // Ensure other dropdown is closed
+    if (this.showAuthorsDropdown) {
+      this.showMembersDropdown = false;
+    }
+  }
+
+  toggleMembersDropdown() {
+    this.showMembersDropdown = !this.showMembersDropdown;
+    // Ensure other dropdown is closed
+    if (this.showMembersDropdown) {
+      this.showAuthorsDropdown = false;
+    }
+  }
+
+
 
   loadMembers() {
     this.memberService.getAllMembers().subscribe((data) => {

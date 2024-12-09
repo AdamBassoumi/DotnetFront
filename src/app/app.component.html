@@ -1,47 +1,82 @@
-<div class="flex h-screen bg-gray-100">
+<div class="flex h-screen font-sans bg-gray-100">
   <!-- Sidebar: Authors -->
-  <div class="w-1/4 bg-white shadow-md p-5">
-    <h1 class="text-3xl mb-6 text-[#800020]">ShelfMaster</h1> <!-- Larger heading for site name -->
-    <ul class="space-y-2">
-      <li class="bg-gray-200 p-2 rounded cursor-pointer" 
-          [ngClass]="{'bg-blue-200': selectedAuthorId === 0 && selectedMemberId === 0}"
-          (click)="onAuthorClick(0)">
+  <div class="w-1/4 bg-white shadow-md py-5 px-6">
+    <div class="flex justify-center items-center">
+      <img src="assets\images\logo2.png" alt="ShelfMaster Logo" class="h-full mb-2 w-full">
+    </div>    
+    <div>
+      <button 
+        class="bg-gray-200 p-2 rounded w-full text-left" 
+        (click)="toggleAuthorsDropdown()">
         Authors
-      </li>
-    
-      <li *ngFor="let author of Allauthors" 
-          class="bg-gray-200 p-2 rounded cursor-pointer"
+      </button>
+      <ul *ngIf="showAuthorsDropdown" class="space-y-2 mt-2">
+        <!-- 'All Authors' option -->
+        <li 
+          class="bg-gray-200 p-2 rounded cursor-pointer" 
+          [ngClass]="{'bg-blue-200': selectedAuthorId === 0}"
+          (click)="onAuthorClick(0)">
+          All Authors
+        </li>
+        <!-- List of authors -->
+        <li 
+          *ngFor="let author of Allauthors" 
+          class="bg-gray-200 p-2 rounded cursor-pointer" 
           [ngClass]="{'bg-blue-200': selectedAuthorId === author.id}"
           (click)="onAuthorClick(author.id)">
-        {{ author.name }}
-      </li>
-    
-      <li class="bg-gray-200 p-2 rounded cursor-pointer" 
-          [ngClass]="{'bg-blue-200': selectedMemberId === 0 && selectedAuthorId === 0}"
-          (click)="onMemberClick(0)">
+          {{ author.name }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Members Dropdown -->
+    <div class="mt-4">
+      <button 
+        class="bg-[#C3E991] text-green-700 p-2 rounded w-full text-left" 
+        (click)="toggleMembersDropdown()">
         Members
-      </li>
-    
-      <li *ngFor="let member of members" 
-          class="bg-gray-200 p-2 rounded cursor-pointer"
+      </button>
+      <ul *ngIf="showMembersDropdown" class="space-y-2 mt-2">
+        <!-- 'All Members' option -->
+        <li 
+        class="bg-gray-200 p-2 rounded flex items-center cursor-pointer relative"
+        [ngClass]="{'bg-blue-200': selectedMemberId === 0}"
+        (click)="onMemberClick(0)">
+        
+        <span>All Members</span>
+        
+        <button 
+          class="absolute right-3 text-[#AC3931] hover:text-red-500 transition"
+          onclick="alert('Dom, are you sure you want to delete this member?')">
+          ✖
+        </button>
+        </li>
+        <!-- List of members -->
+        <li 
+          *ngFor="let member of members" 
+          class="bg-gray-200 p-2 rounded cursor-pointer" 
           [ngClass]="{'bg-blue-200': selectedMemberId === member.id}"
           (click)="onMemberClick(member.id)">
-        {{ member.fullName }}
-      </li>
-    </ul>
+          {{ member.fullName }}
+        </li>
+      </ul>
+    </div>
   </div>
 
   <!-- Main Content -->
-  <div class="flex-1 p-6">
+  <div class="flex-1 py-4 px-6">
     <!-- Button to Add a Book -->
-    <button class="bg-blue-500 text-white py-2 px-4 mr-3 rounded mb-4" (click)="openAddBookPopup()">
+    <button class="bg-[#0072BB] text-white py-2 px-4 mr-3 rounded mb-4" (click)="openAddBookPopup()">
       Add a Book
     </button>
-
-    <button class="bg-green-500 text-white py-2 px-4 rounded mt-4" (click)="openAddMemberPopup()">
+    <button class="bg-[#C3E991] text-green-700 py-2 px-4 rounded mt-4" (click)="openAddMemberPopup()">
       Add a Member
     </button>
-
+    <!--if u need an error popup-->
+    <div id="error-popup" class="hidden fixed top-4 right-4 bg-[#AC3931] text-white px-4 py-2 rounded shadow-lg flex items-center space-x-2 z-50">
+    <span id="error-message" class="text-sm font-semibold">Error: Something went wrong!</span>
+    <button class="text-white hover:text-gray-200" (click)="hideErrorPopup()">✖</button>
+    </div>
     <!-- Books List -->
     <div class="grid grid-cols-5 gap-4">
       <div *ngFor="let book of Allbooks | filterByAuthor:selectedAuthorId:selectedMemberId:Allauthors"
@@ -186,4 +221,12 @@
     <!-- End of Nested Rent a Book Popup -->
 
   </div>
+
+
+
+  <!-- Error Message Popup -->
+
+
 </div>
+
+

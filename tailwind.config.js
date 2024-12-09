@@ -4,7 +4,9 @@ module.exports = {
     "./src/**/*.{html,ts}", // Include all HTML and TypeScript files in the src folder
   ],
   theme: {
-    extend: {},
+    extend: {fontFamily: {
+      sans: ['Telegraf', 'sans-serif'], // Add Telegraf as the primary sans font
+    },},
   },
   plugins: [],
 };
