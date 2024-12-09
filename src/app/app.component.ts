@@ -15,28 +15,7 @@ import { forkJoin, switchMap } from 'rxjs';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  showErrorPopup(message: string): void {
-    const popup = document.getElementById('error-popup');
-    const messageSpan = document.getElementById('error-message');
 
-    if (popup && messageSpan) {
-      messageSpan.textContent = `Error: ${message}`;
-      popup.classList.remove('hidden'); // Show the popup
-
-      // Auto-hide the popup after 5 seconds
-      setTimeout(() => {
-        popup.classList.add('hidden');
-      }, 5000);
-    }
-  }
-
-  // Function to manually hide the popup (e.g., on button click)
-  hideErrorPopup(): void {
-    const popup = document.getElementById('error-popup');
-    if (popup) {
-      popup.classList.add('hidden'); // Hide the popup
-    }
-  }
   // authors: Author[] = [
   //   {id: 1,name: 'Author 1'},
   //   {id: 2,name: 'Author 2'},
@@ -58,9 +37,15 @@ export class AppComponent implements OnInit {
   Allbooks: Book[] = [];
   members: Member[] = [];
 
+  filteredAuthors: Author[] = [];
+  filteredMembers: Member[] = [];
+
   newBook = { title: '', genre: '', description: '', author: '', isBorrowed: false, authorId: 2 ,rentedById:null};
 
   newMember:any = {fullName:''}
+
+  showSuggestions: boolean = false;
+  showMemberSuggestions: boolean = false;
 
   selectedBook: any = null;
   selectedAuthorId = 0;
@@ -79,8 +64,52 @@ export class AppComponent implements OnInit {
   constructor(
     private authorService: AuthorService,
     private bookService: BookService,
-    private memberService: MemberService
-  ) { }
+    private memberService: MemberService,
+  ) {
+    this.filteredAuthors = [...this.Allauthors]; // Initialize filtered list
+    this.filteredMembers = [...this.members]; // Initialize filtered list
+   }
+
+  filterAuthors(): void {
+    const input = this.newBook.author.toLowerCase();
+    this.filteredAuthors = this.Allauthors.filter(author =>
+      author.name.toLowerCase().includes(input)
+    );
+  }
+
+  selectAuthor(name: string): void {
+    this.newBook.author = name;
+    this.showSuggestions = false;
+  }
+
+  onBlur(): void {
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 200);
+  }
+
+  filterMembers(): void {
+    const input = this.rentDetails.memberName.toLowerCase();
+    this.filteredMembers = this.members.filter(member =>
+      member.fullName.toLowerCase().includes(input)
+    );
+  }
+
+  selectMember(name: string): void {
+    this.rentDetails.memberName = name;
+    this.showMemberSuggestions = false;
+  }
+
+  onMemberBlur(): void {
+    setTimeout(() => {
+      this.showMemberSuggestions = false;
+    }, 200);
+  }
+
+  getMemberFullName(memberId: number): string {
+    const member = this.members.find((m) => m.id === memberId);
+    return member ? `${member.fullName}` : 'Unknown Member';
+  }
 
   ngOnInit() {
     this.loadAuthors();
@@ -93,6 +122,29 @@ export class AppComponent implements OnInit {
       this.Allauthors = data;
       console.log(this.Allauthors)
     });
+  }
+
+  showErrorPopup(message: string): void {
+    const popup = document.getElementById('error-popup');
+    const messageSpan = document.getElementById('error-message');
+
+    if (popup && messageSpan) {
+      messageSpan.textContent = `Error: ${message}`;
+      popup.classList.remove('hidden'); // Show the popup
+
+      // Auto-hide the popup after 5 seconds
+      setTimeout(() => {
+        popup.classList.add('hidden');
+      }, 5000);
+    }
+  }
+
+  // Function to manually hide the popup (e.g., on button click)
+  hideErrorPopup(): void {
+    const popup = document.getElementById('error-popup');
+    if (popup) {
+      popup.classList.add('hidden'); // Hide the popup
+    }
   }
 
   loadBooks() {
@@ -148,38 +200,64 @@ export class AppComponent implements OnInit {
     }
   }
 
+  getAuthorNameByBookId(authorId: number): string | undefined {
+
+    const author = this.Allauthors.find(a => a.id === authorId);
+    if (!author) {
+      return undefined;
+    }
+    return author.name;
+  }
+
   addBook() {
-
-    //this.books.push({ ...this.newBook });
-
-    var newBookDom = {
+    const newBookDom = {
       title: this.newBook.title,
       isBorrowed: false,
-      description:this.newBook.description,
-      genre:this.newBook.genre
+      description: this.newBook.description,
+      genre: this.newBook.genre,
     };
-
-    var auth = this.newBook.author
-
-    console.log(newBookDom, auth)
-
-    this.newBook = { title: '', genre: '', description: '', author: '', isBorrowed: false, authorId: 2 ,rentedById:null};
-
+  
+    const auth = this.newBook.author;
+  
+    console.log(newBookDom, auth);
+  
+    this.newBook = {
+      title: '',
+      genre: '',
+      description: '',
+      author: '',
+      isBorrowed: false,
+      authorId: 2,
+      rentedById: null,
+    };
+  
     if (auth) {
       // Use the BookService to add the book
       this.bookService.addBook(newBookDom, auth).subscribe(
         () => {
           console.log('Book added successfully');
-          this.closeAddBookPopup();
+          // Reload the books list
+          this.bookService.getAllBooks().subscribe((booksData) => {
+            this.Allbooks = booksData;
+            console.log(this.Allbooks);
+            // Reload the authors list
+            this.authorService.getAllAuthors().subscribe((authorsData) => {
+              this.Allauthors = authorsData;
+              console.log(this.Allauthors);
+              this.closeAddBookPopup(); // Close popup after both lists are reloaded
+            });
+          });
         },
+        (error) => {
+          console.error('Error adding book:', error);
+        }
       );
     } else {
       console.error('Author name is missing!');
     }
-
-    this.closeAddBookPopup();
   }
-
+  
+  
   rentBook() {
     if (this.selectedBook && this.rentDetails.memberName && this.rentDetails.duration > 0) {
       this.bookService.rentBook(this.selectedBook.id!, this.rentDetails.memberName).subscribe(
@@ -256,7 +334,7 @@ export class AppComponent implements OnInit {
     if (bookToDelete.isBorrowed) {
       // Set the error message and exit the function
       this.errorMessage = `The book "${bookToDelete.title}" is currently borrowed and cannot be deleted.`;
-      console.warn(this.errorMessage);
+      this.showErrorPopup(this.errorMessage)
       return;
     }
   
@@ -289,7 +367,7 @@ export class AppComponent implements OnInit {
     if (memberToDelete.borrowedBooks && memberToDelete.borrowedBooks.length > 0) {
       // Set the error message and exit the function
       this.errorMessage = `The member "${memberToDelete.fullName}" cannot be deleted because they have borrowed books.`;
-      console.warn(this.errorMessage);
+      this.showErrorPopup(this.errorMessage)
       return;
     }
   
